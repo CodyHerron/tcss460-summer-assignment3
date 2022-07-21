@@ -1,0 +1,209 @@
+<!-- TCSS 460 : Summer 2020 -->
+<!-- Assignment 3 -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment 3</title>
+    <!-- add a reference to the external stylesheet -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <style>
+        body{
+            background-color: beige;
+        }
+        .TopBar{
+            font-size: 32px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HTML code for displaying the navigation bar on the top -->
+    <nav class="navbar navbar-dark mb-3" style="background-color: rgb(154, 210, 21)">
+        <div class="container">
+            <a href="#" class="navbar-brand TopBar">Health Calculator</a>
+        </div>
+    </nav>
+    <div class="container-md">
+        <!--Holds the main content for variables to calculate with -->
+        <div class="card mb-3">
+            <div class="card-header">Calculator for BMI, Bodyfat, BMR, and Daily Calories</div>
+            <div class="card-body">
+                <p class="lead">Enter Age</p>
+                <input type="number" id="age" class="form-control" placeholder="ex. 25">
+                <br>
+                <p class="lead">Enter Height (Meters)</p>
+                <input type="number" id="height" class="form-control" placeholder="ex. 1.787">
+                <br>
+                <p class="lead">Enter Weight (kg)</p>
+                <input type="number" id="weight" class="form-control" placeholder="ex. 67.35">
+                <br>
+                <button type="submit" class="btn btn-primary" id="calculate">Calculate</button>
+            </div>
+            
+        </div>
+    </div>
+    
+
+
+    <!-- Modal -->
+    <div class="modal   bd-example-modal-sm" id="infoDialog" tabindex="-1" role="dialog" aria-labelledby="infoDialog"
+        aria-hidden="true">
+        <div class="modal-dialog  modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title"></div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-justify">
+                    <!-- enter details here -->
+                    <div class="card">
+                        <ul class="list-group">
+                            <li class="list-group-item" id="bmi"></li>
+                            <li class="list-group-item" id="bodyfat"></li>
+                            <li class="list-group-item" id="bmr"></li>
+                            <li class="list-group-item" id="dailycal"></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <p id="footer-info"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //add event listener for the twitch games button
+        //parse response and display on the content
+        $("#calculate").click(async function getResults(){
+            var age = $("#age").val().trim();
+            var height = $("#height").val().trim();
+            var weight = $("#weight").val().trim();
+
+            if(age === "" || age == undefined){
+                alert("oops, you forgot to enter a valid age in years ");
+            } else if(height === "" || height == undefined){
+                alert("oops, you forgot to enter a valid height in meters ");
+            } else if(weight === "" || weight == undefined){
+                alert("oops, you forgot to enter a valid weight in kg ");
+            } else {
+                console.log(age);
+                console.log(height);
+                console.log(weight);
+                
+                //Section to get bmi calculation
+                const url = `http://127.0.0.1:3000/bmi/${weight}/${height}`;
+                console.log(url);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    cache: 'no-cache',
+                    mode: 'no-cors',
+                    credentials: 'same-origin'
+                });
+                console.log("Response Status: " + response.status);
+                //handle invalid symbols
+                if(response.status != "200"){
+                    alert("you have entered an invalid item for bmi");
+                    return;
+                }
+
+                //convert response to json
+                const bmiResponse = await response;
+                console.log(bmiResponse);
+
+                //Section to get bodyfat calculation
+                const url2 = `http://127.0.0.1:3000/bodyfat/${age}/${bmiResponse.bmi}`;
+                console.log(url2);
+                const response2 = await fetch(url2, {
+                    method: 'GET',
+                    cache: 'no-cache',
+                    mode: 'no-cors',
+                    credentials: 'same-origin'
+                });
+                
+                //handle invalid symbols
+                if(response2.status != "200"){
+                    alert("you have entered an invalid item for bodyfat");
+                    return;
+                }
+
+                //convert response to json
+                const bodyfatResponse = await response2.json();
+                console.log(bodyfatResponse);
+
+                //Section to get bmr calculation
+                const url3 = `http://127.0.0.1:3000/bmr/${age}/${weight}/${height}`;
+                console.log(url3);
+                const response3 = await fetch(url3, {
+                    method: 'GET',
+                    cache: 'no-cache',
+                    mode: 'no-cors',
+                    credentials: 'same-origin'
+                });
+                
+                //handle invalid symbols
+                if(response3.status != "200"){
+                    alert("BMR failed to load");
+                    return;
+                }
+
+                //convert response to json
+                const bmrResponse = await response3.json();
+                console.log(bmrResponse);
+
+                //Section to get daily calorie calculation
+                const url4 = `http://127.0.0.1:3000/calories/${age}/${weight}/${height}`;
+                console.log(url4);
+                const response4 = await fetch(url4, {
+                    method: 'GET',
+                    cache: 'no-cache',
+                    mode: 'no-cors',
+                    credentials: 'same-origin'
+                });
+                
+                //handle invalid symbols
+                if(response4.status != "200"){
+                    alert("Daily Calories failed to load");
+                    return;
+                }
+
+                //convert response to json
+                const dailyCalResponse = await response4.json();
+                console.log(dailyCalResponse);
+
+                //display modal
+                infoDialog.style.display = "block";
+
+                //map response data to html elements
+                $("#bmi").html("BMI: " + bmiResponse.bmi);
+                $("#bodyfat").html("Bodyfat %: " + bodyfatResponse.bodyfat);
+                $("#bmr").html("BMR: " + bmrResponse.bmr);
+                $("#dailycal").html("Daily Calories: " + dailyCalResponse.dailyCal);
+
+            }
+            
+
+        });
+    </script>
+
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+
+</body>
+
+</html>
